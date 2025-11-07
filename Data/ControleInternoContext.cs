@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using TrabalhoAPI.Models;
+using Auditoria.Models;
 
-namespace TrabalhoAPI.Data
+namespace Auditoria.Data
 {
     /// <summary>
     /// Contexto do Entity Framework para o sistema de Controle Interno

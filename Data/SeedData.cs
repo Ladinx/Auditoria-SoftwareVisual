@@ -1,16 +1,9 @@
-using TrabalhoAPI.Models;
+using Auditoria.Models;
 
-namespace TrabalhoAPI.Data
+namespace Auditoria.Data
 {
-    /// <summary>
-    /// Classe responsável por popular o banco de dados com dados iniciais
-    /// </summary>
     public static class SeedData
     {
-        /// <summary>
-        /// Inicializa o banco de dados com dados de exemplo
-        /// </summary>
-        /// <param name="context">Contexto do Entity Framework</param>
         public static void Initialize(ControleInternoContext context)
         {
             // Verificar se já existem dados

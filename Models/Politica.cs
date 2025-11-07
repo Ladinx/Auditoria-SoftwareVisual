@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TrabalhoAPI.Models
+namespace Auditoria.Models
 {
     /// <summary>
     /// Representa uma política de controle interno da organização

@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TrabalhoAPI.Models
+namespace Auditoria.Models
 {
     /// <summary>
     /// Representa uma permissão de acesso no sistema
