@@ -1,6 +1,6 @@
 # API de Auditoria e Controle Interno
 
-Sistema de API RESTful para controle interno organizacional, desenvolvido em C# com .NET 8 e Entity Framework Core.
+Sistema de API RESTful para controle interno organizacional, desenvolvido em C# com .NET 7 e Entity Framework Core.
 
 ## Funcionalidades
 
@@ -11,7 +11,7 @@ Sistema de API RESTful para controle interno organizacional, desenvolvido em C# 
 
 ## Tecnologias Utilizadas
 
-- .NET 8.0
+- .NET 7.0
 - Entity Framework Core
 - SQLite
 - Minimal APIs (ASP.NET Core)
@@ -44,18 +44,13 @@ As rotas estão organizadas por tipo de operação HTTP em arquivos separados:
 - **DeleteRoutes.cs**: Contém todas as rotas DELETE (excluir registros)
 
 ## Como Executar
-
-1. **Pré-requisitos**:
-   - .NET 8.0 SDK instalado
-   - Visual Studio 2022 ou VS Code
-
-2. **Executar o projeto**:
+1. **Executar o projeto**:
    ```bash
    dotnet restore
    dotnet run --project Auditoria.csproj
    ```
 
-3. **Acessar a API**:
+2. **Acessar a API**:
    - API Base: `http://localhost:5000/api` ou `https://localhost:5001/api`
    - As rotas estão disponíveis conforme descrito na seção "Endpoints Disponíveis"
 
@@ -156,15 +151,6 @@ Content-Type: application/json
 DELETE /api/politicas/1
 ```
 
-## Características Técnicas
-
-- **Arquitetura**: Minimal APIs do ASP.NET Core
-- **Validação**: Data Annotations para validação de modelos
-- **Tratamento de Erros**: Try-catch com mensagens claras e códigos HTTP apropriados
-- **Async/Await**: Operações assíncronas para melhor performance
-- **Ordenação**: Resultados de logs e trilhas ordenados por data/hora decrescente
-- **Organização**: Rotas separadas por tipo de operação HTTP (GET, POST, DELETE)
-
 ## Respostas da API
 
 A API retorna os seguintes códigos HTTP:
@@ -175,6 +161,6 @@ A API retorna os seguintes códigos HTTP:
 - `404 Not Found`: Registro não encontrado
 - `500 Internal Server Error`: Erro interno do servidor
 
-## Desenvolvido por
+## Desenvolvido por Arthur Soares, Rebecca Beccari, João Bender.
 
 Sistema desenvolvido como trabalho acadêmico para demonstração de conceitos de API RESTful, Entity Framework Core, Minimal APIs e integração com banco de dados SQLite.
