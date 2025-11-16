@@ -11,9 +11,16 @@ builder.Services.AddDbContext<ControleInternoContext>(options =>
 
 var app = builder.Build();
 
+// Habilitar arquivos estáticos
+app.UseStaticFiles();
+
+// Rota para servir a página inicial
+app.MapGet("/", () => Results.Redirect("/index.html"));
+
 // Registrar todas as rotas organizadas por tipo de operação
 app.MapGetRoutes();
 app.MapPostRoutes();
+app.MapPutRoutes();
 app.MapDeleteRoutes();
 
 // Garantir que o banco de dados seja criado e populado

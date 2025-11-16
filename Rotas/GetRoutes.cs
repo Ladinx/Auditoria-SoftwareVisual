@@ -8,6 +8,26 @@ namespace Auditoria.Rotas
     {
         public static void MapGetRoutes(this WebApplication app)
         {
+            // ========== ROTAS DE USUÁRIOS ==========
+            
+            // Lista todos os usuários únicos dos logs de acesso
+            app.MapGet("/api/usuarios", async (ControleInternoContext context) =>
+            {
+                try
+                {
+                    var usuarios = await context.LogsAcesso
+                        .Select(l => l.Usuario)
+                        .Distinct()
+                        .OrderBy(u => u)
+                        .ToListAsync();
+                    return Results.Ok(usuarios);
+                }
+                catch (Exception ex)
+                {
+                    return Results.Problem($"Erro interno do servidor: {ex.Message}", statusCode: 500);
+                }
+            });
+
             // ========== ROTAS DE LOGS DE ACESSO ==========
             
             // Lista todos os logs de acesso

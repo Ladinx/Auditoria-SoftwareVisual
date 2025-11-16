@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Auditoria.Data;
 using Auditoria.Models;
+using Auditoria.Services;
 
 namespace Auditoria.Rotas
 {
@@ -30,6 +32,14 @@ namespace Auditoria.Rotas
                     context.LogsAcesso.Add(logAcesso);
                     await context.SaveChangesAsync();
 
+                    // Criar trilha de auditoria automaticamente
+                    await AuditoriaService.CriarTrilhaCreateAsync(
+                        context,
+                        "LogAcesso",
+                        logAcesso.Usuario, // Usar o usuário do log
+                        new { id = logAcesso.Id, usuario = logAcesso.Usuario, acao = logAcesso.Acao, ipOrigem = logAcesso.IpOrigem, dataHora = logAcesso.DataHora }
+                    );
+
                     return Results.Created($"/api/logsacesso/{logAcesso.Id}", logAcesso);
                 }
                 catch (Exception ex)
@@ -41,7 +51,7 @@ namespace Auditoria.Rotas
             // ========== ROTAS DE PERMISSÕES ==========
 
             // Cria uma nova permissão
-            app.MapPost("/api/permissoes", async (Permissao permissao, ControleInternoContext context) =>
+            app.MapPost("/api/permissoes", async (Permissao permissao, HttpRequest request, ControleInternoContext context) =>
             {
                 try
                 {
@@ -51,8 +61,25 @@ namespace Auditoria.Rotas
                         return Results.BadRequest("Dados da permissão são obrigatórios.");
                     }
 
+                    // Obter usuário do header
+                    var usuario = AuditoriaService.ObterUsuarioDoHeader(request);
+                    
+                    // Validar usuário se não for "Sistema"
+                    if (usuario != "Sistema" && !await AuditoriaService.ValidarUsuarioAsync(context, usuario))
+                    {
+                        return Results.BadRequest($"Usuário '{usuario}' não encontrado. Use um usuário válido dos logs de acesso.");
+                    }
+
                     context.Permissoes.Add(permissao);
                     await context.SaveChangesAsync();
+
+                    // Criar trilha de auditoria automaticamente
+                    await AuditoriaService.CriarTrilhaCreateAsync(
+                        context,
+                        "Permissao",
+                        usuario,
+                        new { id = permissao.Id, nome = permissao.Nome, nivel = permissao.Nivel, descricao = permissao.Descricao }
+                    );
 
                     return Results.Created($"/api/permissoes/{permissao.Id}", permissao);
                 }
@@ -65,7 +92,7 @@ namespace Auditoria.Rotas
             // ========== ROTAS DE POLÍTICAS ==========
 
             // Cria uma nova política
-            app.MapPost("/api/politicas", async (Politica politica, ControleInternoContext context) =>
+            app.MapPost("/api/politicas", async (Politica politica, HttpRequest request, ControleInternoContext context) =>
             {
                 try
                 {
@@ -73,6 +100,15 @@ namespace Auditoria.Rotas
                     if (politica == null)
                     {
                         return Results.BadRequest("Dados da política são obrigatórios.");
+                    }
+
+                    // Obter usuário do header
+                    var usuario = AuditoriaService.ObterUsuarioDoHeader(request);
+                    
+                    // Validar usuário se não for "Sistema"
+                    if (usuario != "Sistema" && !await AuditoriaService.ValidarUsuarioAsync(context, usuario))
+                    {
+                        return Results.BadRequest($"Usuário '{usuario}' não encontrado. Use um usuário válido dos logs de acesso.");
                     }
 
                     // Definir data de criação se não foi informada
@@ -83,6 +119,14 @@ namespace Auditoria.Rotas
 
                     context.Politicas.Add(politica);
                     await context.SaveChangesAsync();
+
+                    // Criar trilha de auditoria automaticamente
+                    await AuditoriaService.CriarTrilhaCreateAsync(
+                        context,
+                        "Politica",
+                        usuario,
+                        new { id = politica.Id, nome = politica.Nome, descricao = politica.Descricao, ativa = politica.Ativa, dataCriacao = politica.DataCriacao }
+                    );
 
                     return Results.Created($"/api/politicas/{politica.Id}", politica);
                 }

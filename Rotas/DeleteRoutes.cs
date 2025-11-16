@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Auditoria.Data;
 using Auditoria.Models;
+using Auditoria.Services;
 
 namespace Auditoria.Rotas
 {
@@ -11,7 +13,7 @@ namespace Auditoria.Rotas
             // ========== ROTAS DE LOGS DE ACESSO ==========
 
             // Exclui um log de acesso específico
-            app.MapDelete("/api/logsacesso/{id}", async (int id, ControleInternoContext context) =>
+            app.MapDelete("/api/logsacesso/{id}", async (int id, HttpRequest request, ControleInternoContext context) =>
             {
                 try
                 {
@@ -22,8 +24,36 @@ namespace Auditoria.Rotas
                         return Results.NotFound($"Log de acesso com ID {id} não encontrado.");
                     }
 
+                    // Obter usuário do header (ou usar o usuário do log se não informado)
+                    var usuario = AuditoriaService.ObterUsuarioDoHeader(request);
+                    if (usuario == "Sistema")
+                    {
+                        usuario = log.Usuario; // Usar o usuário do log se não foi informado no header
+                    }
+                    else if (!await AuditoriaService.ValidarUsuarioAsync(context, usuario))
+                    {
+                        return Results.BadRequest($"Usuário '{usuario}' não encontrado. Use um usuário válido dos logs de acesso.");
+                    }
+
+                    // Salvar dados para trilha de auditoria antes de deletar
+                    var dadosAnteriores = new { 
+                        id = log.Id, 
+                        usuario = log.Usuario, 
+                        acao = log.Acao, 
+                        ipOrigem = log.IpOrigem, 
+                        dataHora = log.DataHora 
+                    };
+
                     context.LogsAcesso.Remove(log);
                     await context.SaveChangesAsync();
+
+                    // Criar trilha de auditoria automaticamente
+                    await AuditoriaService.CriarTrilhaDeleteAsync(
+                        context,
+                        "LogAcesso",
+                        usuario,
+                        dadosAnteriores
+                    );
 
                     return Results.NoContent();
                 }
@@ -36,7 +66,7 @@ namespace Auditoria.Rotas
             // ========== ROTAS DE PERMISSÕES ==========
 
             // Exclui uma permissão específica
-            app.MapDelete("/api/permissoes/{id}", async (int id, ControleInternoContext context) =>
+            app.MapDelete("/api/permissoes/{id}", async (int id, HttpRequest request, ControleInternoContext context) =>
             {
                 try
                 {
@@ -47,8 +77,33 @@ namespace Auditoria.Rotas
                         return Results.NotFound($"Permissão com ID {id} não encontrada.");
                     }
 
+                    // Obter usuário do header
+                    var usuario = AuditoriaService.ObterUsuarioDoHeader(request);
+                    
+                    // Validar usuário se não for "Sistema"
+                    if (usuario != "Sistema" && !await AuditoriaService.ValidarUsuarioAsync(context, usuario))
+                    {
+                        return Results.BadRequest($"Usuário '{usuario}' não encontrado. Use um usuário válido dos logs de acesso.");
+                    }
+
+                    // Salvar dados para trilha de auditoria antes de deletar
+                    var dadosAnteriores = new { 
+                        id = permissao.Id, 
+                        nome = permissao.Nome, 
+                        nivel = permissao.Nivel, 
+                        descricao = permissao.Descricao 
+                    };
+
                     context.Permissoes.Remove(permissao);
                     await context.SaveChangesAsync();
+
+                    // Criar trilha de auditoria automaticamente
+                    await AuditoriaService.CriarTrilhaDeleteAsync(
+                        context,
+                        "Permissao",
+                        usuario,
+                        dadosAnteriores
+                    );
 
                     return Results.NoContent();
                 }
@@ -61,7 +116,7 @@ namespace Auditoria.Rotas
             // ========== ROTAS DE POLÍTICAS ==========
 
             // Exclui uma política específica
-            app.MapDelete("/api/politicas/{id}", async (int id, ControleInternoContext context) =>
+            app.MapDelete("/api/politicas/{id}", async (int id, HttpRequest request, ControleInternoContext context) =>
             {
                 try
                 {
@@ -72,8 +127,34 @@ namespace Auditoria.Rotas
                         return Results.NotFound($"Política com ID {id} não encontrada.");
                     }
 
+                    // Obter usuário do header
+                    var usuario = AuditoriaService.ObterUsuarioDoHeader(request);
+                    
+                    // Validar usuário se não for "Sistema"
+                    if (usuario != "Sistema" && !await AuditoriaService.ValidarUsuarioAsync(context, usuario))
+                    {
+                        return Results.BadRequest($"Usuário '{usuario}' não encontrado. Use um usuário válido dos logs de acesso.");
+                    }
+
+                    // Salvar dados para trilha de auditoria antes de deletar
+                    var dadosAnteriores = new { 
+                        id = politica.Id, 
+                        nome = politica.Nome, 
+                        descricao = politica.Descricao, 
+                        ativa = politica.Ativa, 
+                        dataCriacao = politica.DataCriacao 
+                    };
+
                     context.Politicas.Remove(politica);
                     await context.SaveChangesAsync();
+
+                    // Criar trilha de auditoria automaticamente
+                    await AuditoriaService.CriarTrilhaDeleteAsync(
+                        context,
+                        "Politica",
+                        usuario,
+                        dadosAnteriores
+                    );
 
                     return Results.NoContent();
                 }
